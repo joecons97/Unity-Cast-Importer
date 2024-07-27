@@ -1,7 +1,7 @@
 Directly import .cast files into Unity.<br>
 https://github.com/dtzxporter/cast
 
-Cast is a common media file format used in asset extraction software such as Greyhound (https://github.com/dtzxporter/cast)<br>
+Cast is a common media file format used in asset extraction software such as Greyhound (https://github.com/Scobalula/Greyhound)<br>
 Used for extracting models, animations, sounds, images, etc. from various Call of Duty games.<br>
 
 This repo is in the standard UPM format and so can be added to your Unity project as follows:<br>
