@@ -171,6 +171,8 @@ namespace CastImporter.Editor.Importers
                 var weightValueBuffer = mesh.VertexWeightValueBuffer().ToArray();
                 for (int i = 0; i < newMesh.vertices.Length; i++)
                 {
+                    var vertexWeights = new List<BoneWeight1>();
+
                     byte maxCount = 0;
                     for (int j = 0; j < maximumInfluence; j++)
                     {
@@ -178,13 +180,14 @@ namespace CastImporter.Editor.Importers
                         var boneIndex = weightBoneBuffer[weightBufferIndex];
                         var boneValue = weightValueBuffer[weightBufferIndex];
 
-                        weightsList.Add(new BoneWeight1
+                        vertexWeights.Add(new BoneWeight1
                         {
                             boneIndex = boneIndex,
                             weight = boneValue
                         });
                         maxCount++;
                     }
+                    weightsList.AddRange(vertexWeights.OrderByDescending(x => x.weight));
                     bonesPerVertex[i] = maxCount;
                 }
 
