@@ -30,7 +30,8 @@ namespace CastImporter.Editor.Inspectors
         void RenderModelSection()
         {
             EditorGUILayout.LabelField("Scene", EditorStyles.boldLabel);
-            importer.Scale = EditorGUILayout.FloatField("Scale", importer.Scale);
+            importer.ScaleUnits = (ScaleUnits)EditorGUILayout.EnumPopup("Scale", importer.ScaleUnits);
+            importer.ScaleMultiplier = EditorGUILayout.FloatField("Scale Multiplier", importer.ScaleMultiplier);
 
             EditorGUILayout.Space();
 

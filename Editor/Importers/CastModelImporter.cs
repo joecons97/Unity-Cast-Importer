@@ -15,33 +15,58 @@ using Mesh = UnityEngine.Mesh;
 
 namespace CastImporter.Editor.Importers
 {
+    public enum ScaleUnits
+    {
+        Meters,
+        Inches,
+        Centermeters
+    }
+
     internal class CastModelImporterSettings
     {
-        public float Scale { get; }
+        public ScaleUnits ScaleUnit { get; }
+        public float ScaleMultiplier { get; }
         public bool GenerateLightmapUvs { get; }
         public MeshOptimizationFlags OptimizeMesh { get; }
         public ModelImporterAnimationType AnimationType { get; }
         public bool RecalculateNormals { get; }
 
-        public CastModelImporterSettings(float scale, bool generateLightmapUvs, bool recalculateNormals, MeshOptimizationFlags optimizeMesh, ModelImporterAnimationType animationType)
+        public CastModelImporterSettings(ScaleUnits scaleUnit, float scaleMultiplier, bool generateLightmapUvs, bool recalculateNormals, MeshOptimizationFlags optimizeMesh, ModelImporterAnimationType animationType)
         {
-            Scale = scale;
+            ScaleUnit = scaleUnit;
+            ScaleMultiplier = scaleMultiplier;
             GenerateLightmapUvs = generateLightmapUvs;
             RecalculateNormals = recalculateNormals;
             OptimizeMesh = optimizeMesh;
             AnimationType = animationType;
         }
+
+        public float GetTotalScale()
+        {
+            var baseScale = ScaleUnit switch
+            {
+                ScaleUnits.Meters => CastModelImporter.METERS_SCALE,
+                ScaleUnits.Inches => CastModelImporter.INCHES_SCALE,
+                ScaleUnits.Centermeters => CastModelImporter.CENTERMETERS_SCALE,
+                _ => 1
+            };
+
+            return baseScale * ScaleMultiplier;
+        }
     }
 
     internal static class CastModelImporter
     {
+        public const float METERS_SCALE = 1.0f / 1.0f;
+        public const float INCHES_SCALE = 1.0f / 39.3701f;
+        public const float CENTERMETERS_SCALE = 1.0f / 100.0f;
+
         internal static void ImportModel(AssetImportContext ctx, CastModel model, CastModelImporterSettings settings)
         {
             var fileName = Path.GetFileNameWithoutExtension(ctx.assetPath);
 
             var modelName = string.IsNullOrEmpty(model.Name()) ? fileName : model.Name();
             var mainObject = new GameObject(modelName);
-            mainObject.transform.localScale = UnityEngine.Vector3.one * settings.Scale;
 
             ctx.AddObjectToAsset(modelName, mainObject);
             ctx.SetMainObject(mainObject);
@@ -72,7 +97,7 @@ namespace CastImporter.Editor.Importers
                 {
                     name = name,
                     vertices = castMesh.VertexPositionBuffer()
-                        .Select(x => x.ToUnityVector())
+                        .Select(x => x.ToUnityVector() * settings.GetTotalScale())
                         .ToArray(),
 
                     triangles = castMesh.FaceBuffer()
@@ -232,7 +257,7 @@ namespace CastImporter.Editor.Importers
                 var newBone = new GameObject(bone.Name());
                 ctx.AddObjectToAsset($"bone_{newBone.name}", newBone);
 
-                var translation = bone.LocalPosition().ToUnityVector();
+                var translation = bone.LocalPosition().ToUnityVector() * settings.GetTotalScale();
                 var rotation = bone.LocalRotation().ToUnityQuaternion();
                 var scale = bone.Scale() == null
                     ? UnityEngine.Vector3.one

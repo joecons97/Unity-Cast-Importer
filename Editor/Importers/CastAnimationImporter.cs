@@ -12,13 +12,30 @@ namespace CastImporter.Editor.Importers
 {
     internal class CastAnimationImporterSettings
     {
+        public ScaleUnits ScaleUnit { get; }
+        public float ScaleMultiplier { get; }
         public Transform BaseSkeleton { get; }
         public ModelImporterAnimationType AnimationType { get; }
 
-        public CastAnimationImporterSettings(Transform baseSkeleton, ModelImporterAnimationType animationType)
+        public CastAnimationImporterSettings(ScaleUnits scaleUnit, float scaleMultiplier, Transform baseSkeleton, ModelImporterAnimationType animationType)
         {
             BaseSkeleton = baseSkeleton;
             AnimationType = animationType;
+            ScaleUnit = scaleUnit;
+            ScaleMultiplier = scaleMultiplier;
+        }
+
+        public float GetTotalScale()
+        {
+            var baseScale = ScaleUnit switch
+            {
+                ScaleUnits.Meters => CastModelImporter.METERS_SCALE,
+                ScaleUnits.Inches => CastModelImporter.INCHES_SCALE,
+                ScaleUnits.Centermeters => CastModelImporter.CENTERMETERS_SCALE,
+                _ => 1
+            };
+
+            return baseScale * ScaleMultiplier;
         }
     }
 
@@ -57,6 +74,9 @@ namespace CastImporter.Editor.Importers
 
             if(ctx.mainObject != null)
                 ctx.SetMainObject(animationClip);
+
+            if (settings.BaseSkeleton == null)
+                return;
 
             var curves = animation.Curves();
             var curvesIndex = 0;
@@ -107,7 +127,7 @@ namespace CastImporter.Editor.Importers
                 }
                 else if (property == "tx")
                 {
-                    var valueBuffer = curve.KeyValueBuffer<float>().ToArray();
+                    var valueBuffer = curve.KeyValueBuffer<float>().Select(x => x * settings.GetTotalScale()).ToArray();
                     if (mode == "relative")
                         valueBuffer = valueBuffer.Select(x => x + bone.transform.localPosition.x).ToArray();
 
@@ -115,7 +135,7 @@ namespace CastImporter.Editor.Importers
                 }
                 else if (property == "ty")
                 {
-                    var valueBuffer = curve.KeyValueBuffer<float>().ToArray();
+                    var valueBuffer = curve.KeyValueBuffer<float>().Select(x => x * settings.GetTotalScale()).ToArray();
                     if (mode == "relative")
                         valueBuffer = valueBuffer.Select(x => x + bone.transform.localPosition.y).ToArray();
 
@@ -123,7 +143,7 @@ namespace CastImporter.Editor.Importers
                 }
                 else if (property == "tz")
                 {
-                    var valueBuffer = curve.KeyValueBuffer<float>().ToArray();
+                    var valueBuffer = curve.KeyValueBuffer<float>().Select(x => x * settings.GetTotalScale()).ToArray();
                     if (mode == "relative")
                         valueBuffer = valueBuffer.Select(x => x + bone.transform.localPosition.z).ToArray();
 

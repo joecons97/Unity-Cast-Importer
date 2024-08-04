@@ -13,7 +13,8 @@ namespace CastImporter.Editor.Importers
     {
         internal const string ARMATURE_PARENT_NAME = "Joints";
 
-        public float Scale = 1;
+        public ScaleUnits ScaleUnits = ScaleUnits.Meters;
+        public float ScaleMultiplier = 1;
         public bool GenerateLightmapUvs = false;
         public bool RecalculateNormals = false;
         public MeshOptimizationFlags OptimizeMesh = MeshOptimizationFlags.Everything;
@@ -39,7 +40,7 @@ namespace CastImporter.Editor.Importers
                 {
                     var modelsProgress = modelsIndex++ / (float)models.Count;
                     EditorUtility.DisplayProgressBar("Importing cast file...", $"Importing {Path.GetFileName(ctx.assetPath)} models...", modelsProgress);
-                    CastModelImporter.ImportModel(ctx, model, new CastModelImporterSettings(Scale, GenerateLightmapUvs, RecalculateNormals, OptimizeMesh, AnimationType));
+                    CastModelImporter.ImportModel(ctx, model, new CastModelImporterSettings(ScaleUnits, ScaleMultiplier, GenerateLightmapUvs, RecalculateNormals, OptimizeMesh, AnimationType));
                 }
 
                 var animations = root.ChildrenOfType<CastAnimation>();
@@ -48,7 +49,9 @@ namespace CastImporter.Editor.Importers
                 {
                     var animationsProgress = animationsIndex++ / (float)animations.Count;
                     EditorUtility.DisplayProgressBar("Importing cast file...", $"Importing {Path.GetFileName(ctx.assetPath)} animations...", animationsProgress);
-                    CastAnimationImporter.ImportAnimation(ctx, animation, new CastAnimationImporterSettings(ExistingSkeleton, AnimationType));
+                    CastAnimationImporter.ImportAnimation(ctx, animation, new CastAnimationImporterSettings(
+                        ScaleUnits, ScaleMultiplier,
+                        baseSkeleton: ExistingSkeleton, animationType: AnimationType));
                 }
             }
 
