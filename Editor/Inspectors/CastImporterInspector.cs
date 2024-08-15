@@ -1,5 +1,6 @@
 using CastImporter.Editor.Extensions;
 using CastImporter.Editor.Importers;
+using System.IO;
 using UnityEditor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
@@ -19,7 +20,8 @@ namespace CastImporter.Editor.Inspectors
         public override void OnInspectorGUI()
         {
             RenderModelSection();
-            RenderAnimationSection();
+            RenderRigSection();
+            RenderAnimationsSection();
 
             ApplyRevertGUI();
 
@@ -42,7 +44,7 @@ namespace CastImporter.Editor.Inspectors
             EditorGUILayout.Space();
         }
 
-        void RenderAnimationSection()
+        void RenderRigSection()
         {
             EditorGUILayout.LabelField("Rig", EditorStyles.boldLabel);
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>(importer.assetPath);
@@ -63,8 +65,37 @@ namespace CastImporter.Editor.Inspectors
                     EditorGUILayout.HelpBox("Human rigs are currently not supported! Please choose another option.", MessageType.Error);
                 }
             }
+            EditorGUILayout.Space();
+        }
 
+        void RenderAnimationsSection()
+        {
+            EditorGUILayout.LabelField("Animations", EditorStyles.boldLabel);
             importer.ImportEvents = EditorGUILayout.Toggle("Import Events", importer.ImportEvents);
+            if(GUILayout.Button("Export Animations as Asset"))
+            {
+                ExportAnimationsAsAssetFile();
+            }
+        }
+
+        void ExportAnimationsAsAssetFile()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<AnimationClip>(importer.assetPath);
+            if(asset == null)
+            {
+                EditorUtility.DisplayDialog("Error", "No animations could be found in this asset!", "Ok");
+                return;
+            }
+
+            var fileName = $"{asset.name}_(export).asset";
+            var savePath = EditorUtility.SaveFilePanelInProject("Export Animation As Asset", fileName, "asset", "Export a .cast animation to an editable Unity Animation Clip.");
+            if (string.IsNullOrEmpty(savePath))
+                return;
+
+            var newAsset = Instantiate(asset);
+            AssetDatabase.CreateAsset(newAsset, savePath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
     }
 }

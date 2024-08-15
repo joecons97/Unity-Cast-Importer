@@ -1,6 +1,6 @@
 {
     "name": "com.josephus.castimporter",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "Scriptable Importer for the .cast file format.",
     "displayName": "Cast Importer"
 }

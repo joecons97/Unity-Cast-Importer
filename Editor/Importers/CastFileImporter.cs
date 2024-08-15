@@ -23,6 +23,8 @@ namespace CastImporter.Editor.Importers
         public ModelImporterAnimationType AnimationType = ModelImporterAnimationType.Generic;
         public bool ImportEvents;
 
+        [SerializeField] int animationsCount;
+
         public override void OnImportAsset(AssetImportContext ctx)
         {
             var cast = CastFile.Load(ctx.assetPath);
