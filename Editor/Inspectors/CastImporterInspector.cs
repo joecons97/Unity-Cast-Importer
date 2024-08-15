@@ -19,7 +19,7 @@ namespace CastImporter.Editor.Inspectors
         public override void OnInspectorGUI()
         {
             RenderModelSection();
-            RenderRigSection();
+            RenderAnimationSection();
 
             ApplyRevertGUI();
 
@@ -42,7 +42,7 @@ namespace CastImporter.Editor.Inspectors
             EditorGUILayout.Space();
         }
 
-        void RenderRigSection()
+        void RenderAnimationSection()
         {
             EditorGUILayout.LabelField("Rig", EditorStyles.boldLabel);
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>(importer.assetPath);
@@ -64,6 +64,7 @@ namespace CastImporter.Editor.Inspectors
                 }
             }
 
+            importer.ImportEvents = EditorGUILayout.Toggle("Import Events", importer.ImportEvents);
         }
     }
 }

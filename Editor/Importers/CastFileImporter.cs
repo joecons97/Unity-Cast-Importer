@@ -21,6 +21,7 @@ namespace CastImporter.Editor.Importers
 
         public Transform ExistingSkeleton;
         public ModelImporterAnimationType AnimationType = ModelImporterAnimationType.Generic;
+        public bool ImportEvents;
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
@@ -50,8 +51,7 @@ namespace CastImporter.Editor.Importers
                     var animationsProgress = animationsIndex++ / (float)animations.Count;
                     EditorUtility.DisplayProgressBar("Importing cast file...", $"Importing {Path.GetFileName(ctx.assetPath)} animations...", animationsProgress);
                     CastAnimationImporter.ImportAnimation(ctx, animation, new CastAnimationImporterSettings(
-                        ScaleUnits, ScaleMultiplier,
-                        baseSkeleton: ExistingSkeleton, animationType: AnimationType));
+                        ScaleUnits, ScaleMultiplier, ExistingSkeleton, AnimationType, ImportEvents));
                 }
             }
 

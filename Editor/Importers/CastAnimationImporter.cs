@@ -14,15 +14,17 @@ namespace CastImporter.Editor.Importers
     {
         public ScaleUnits ScaleUnit { get; }
         public float ScaleMultiplier { get; }
+        public bool ImportEvents { get; }
         public Transform BaseSkeleton { get; }
         public ModelImporterAnimationType AnimationType { get; }
 
-        public CastAnimationImporterSettings(ScaleUnits scaleUnit, float scaleMultiplier, Transform baseSkeleton, ModelImporterAnimationType animationType)
+        public CastAnimationImporterSettings(ScaleUnits scaleUnit, float scaleMultiplier, Transform baseSkeleton, ModelImporterAnimationType animationType, bool importEvents)
         {
             BaseSkeleton = baseSkeleton;
             AnimationType = animationType;
             ScaleUnit = scaleUnit;
             ScaleMultiplier = scaleMultiplier;
+            ImportEvents = importEvents;
         }
 
         public float GetTotalScale()
@@ -49,7 +51,12 @@ namespace CastImporter.Editor.Importers
             {
                 var time = frame / clip.frameRate;
                 var value = values[index];
-                animationCurve.AddKey(new Keyframe(time, value, 0, 0));
+                var keyframe = new Keyframe(time, value)
+                {
+                    weightedMode = WeightedMode.Both
+                };
+
+                animationCurve.AddKey(keyframe);
                 index++;
             }
 
@@ -179,22 +186,25 @@ namespace CastImporter.Editor.Importers
                 }
             }
 
-            var events = new List<AnimationEvent>();
-
-            foreach (var notification in animation.Notifications())
+            if (settings.ImportEvents)
             {
-                var buffer = notification.KeyFrameBuffer();
-                foreach (var frameIndex in buffer)
+                var events = new List<AnimationEvent>();
+
+                foreach (var notification in animation.Notifications())
                 {
-                    var time = frameIndex / animationClip.frameRate;
-                    events.Add(new AnimationEvent
+                    var buffer = notification.KeyFrameBuffer();
+                    foreach (var frameIndex in buffer)
                     {
-                        functionName = notification.Name(),
-                        time = time,
-                    });
+                        var time = frameIndex / animationClip.frameRate;
+                        events.Add(new AnimationEvent
+                        {
+                            functionName = notification.Name(),
+                            time = time,
+                        });
+                    }
                 }
+                AnimationUtility.SetAnimationEvents(animationClip, events.ToArray());
             }
-            AnimationUtility.SetAnimationEvents(animationClip, events.ToArray());
         }
     }
 }
